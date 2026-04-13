@@ -1,0 +1,17 @@
+[package]
+name = "vast_2"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.102"
+argon2 = "0.5.3"
+axum = "0.8.8"
+dotenvy = "0.15.7"
+jsonwebtoken = "10.3.0"
+serde = "1.0.228"
+serde_json = "1.0.149"
+sqlx = "0.8.6"
+time = "0.3.47"
+tokio = "1.51.1"
+uuid = "1.23.0"
