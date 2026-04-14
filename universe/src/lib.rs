@@ -20,9 +20,3 @@ pub use ships::{
     ShipAttackMode, ShipStats, battery_charge_duration_secs, compute_cost, travel_duration_secs,
 };
 pub use star_id::{parse_star_id, star_display_id, star_location_id};
-
-#[cfg(test)]
-pub mod sync_tests;
-
-#[cfg(feature = "spacetimedb")]
-pub use ships::{ShipAtStar, ShipInTransit, ShipLocation, ship_location_from_flat};

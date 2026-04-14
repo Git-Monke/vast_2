@@ -4,7 +4,6 @@ use crate::{generator::PlanetType, hasher::point_to_random};
 const RESOURCE_SEED: u64 = 0xAAAA_AAAA_AAAA_AAAA;
 
 /// Tag-only material species (e.g. [`Material::kind`] without caring about the `f64` payload).
-#[cfg_attr(feature = "spacetimedb", derive(spacetimedb::SpacetimeType))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum MaterialKind {
     Iron,
@@ -20,7 +19,6 @@ impl MaterialKind {
 ///
 /// - **Procedural planets:** `f64` is a **spawn multiplier** (richness) from [`collect_materials`].
 /// - **SpacetimeDB warehouses:** `f64` is **stored quantity** (units). Same representation, different meaning.
-#[cfg_attr(feature = "spacetimedb", derive(spacetimedb::SpacetimeType))]
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum Material {
     Iron(f64),
