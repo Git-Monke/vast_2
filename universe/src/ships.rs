@@ -18,11 +18,13 @@ pub fn battery_charge_duration_secs(size_kt: u32, battery_ly: u32, star_temp_k: 
     0.1 * f64::from(size_kt) * f64::from(battery_ly) / (t / 1000.0)
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum ShipAttackMode {
     Defend,
     StrikeFirst,
 }
 
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct ShipStats {
     pub size_kt: u32,    // cargo capacity in kilotonnes
     pub speed_lys: f64,  // travel speed in light-years per second

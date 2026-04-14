@@ -21,7 +21,7 @@ impl MaterialKind {
 /// - **Procedural planets:** `f64` is a **spawn multiplier** (richness) from [`collect_materials`].
 /// - **SpacetimeDB warehouses:** `f64` is **stored quantity** (units). Same representation, different meaning.
 #[cfg_attr(feature = "spacetimedb", derive(spacetimedb::SpacetimeType))]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum Material {
     Iron(f64),
     Helium(f64),

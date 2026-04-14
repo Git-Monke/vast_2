@@ -16,7 +16,9 @@ pub use resources::{
     BASELINE_CREDITS_PER_KT_HELIUM, BASELINE_CREDITS_PER_KT_IRON, Material, MaterialKind,
     baseline_credits_per_kt, credits_for_kt_sale, credits_for_materials_sale,
 };
-pub use ships::{ShipAttackMode, ShipStats, battery_charge_duration_secs, travel_duration_secs};
+pub use ships::{
+    ShipAttackMode, ShipStats, battery_charge_duration_secs, compute_cost, travel_duration_secs,
+};
 pub use star_id::{parse_star_id, star_display_id, star_location_id};
 
 #[cfg(test)]
