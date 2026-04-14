@@ -1,6 +1,7 @@
 pub mod checker;
 pub mod generator;
 pub mod hasher;
+pub mod helpers;
 pub mod material_stock;
 pub mod resources;
 pub mod settings;

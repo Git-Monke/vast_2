@@ -24,6 +24,16 @@ pub const PLANE_DENSITY_SCALE: f64 = 1.0 / 1000.0;
 /// `ln(EDGE/CORE) / R_MAX` with `EDGE/CORE = 50`.
 pub const SPACING_GROWTH_PER_LY: f64 = 3.912023005428146 / UNIVERSE_RADIUS_LY;
 
+/// New players spawn at a random point within this Euclidean radius (light-years) of the galactic origin.
+pub const STARTER_DISK_RADIUS_LY: f64 = 5_000.0;
+
+/// Random disk samples tried before giving up (empty Red dwarf + planet with no buildings is sparse).
+pub const MAX_STARTER_SAMPLE_ATTEMPTS: u32 = 4_096;
+
+/// After each disk sample, search this many cells per side (centered on the sample anchor).
+pub const STARTER_LOCAL_GRID: i32 = 50;
+pub const STARTER_LOCAL_HALF: i32 = STARTER_LOCAL_GRID / 2;
+
 #[inline]
 pub fn grid_to_ly(g: i32) -> f64 {
     g as f64 / COORD_UNITS_PER_LY as f64

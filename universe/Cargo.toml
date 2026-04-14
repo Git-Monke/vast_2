@@ -12,3 +12,4 @@ spacetimedb = ["dep:spacetimedb"]
 spacetimedb = { version = "2.1.0", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+rand = "0.10.1"
