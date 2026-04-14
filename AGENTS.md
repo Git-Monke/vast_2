@@ -1,4 +1,19 @@
 DO NOT RUN THE COMMAND `ls -R`. This a rust crate, so you will only find thousands of lines of gibberish that will fill your chat with garbage.
 When exploring dir structure, it is fine to use non-recursive ls, but do not use recursive and USE THE REPO MAP WHENEVER POSSIBLE
 
-AFTER MAKING ANY CHANGES, USE GIT TO COMMIT YOUR CHANGES WITH A CONSISE MESSAGE
+
+## Project Structure Overview
+
+- `server/`: The backend API layer.
+    - `server/src/main.rs`: Entry point for the server, contains route definitions and main application logic.
+    - `server/src/auth.rs`: Authentication logic, including JWT handling and login/registration handlers.
+    - `server/src/error.rs`: Error handling and custom error types for the server.
+
+- `universe/`: Core game logic and shared types.
+    - `universe/src/ships.rs`: Ship statistics, travel logic, and combat-related structures.
+    - `universe/src/resources.rs`: Definitions for materials (Iron, Helium-3, etc.) and their values.
+    - `universe/src/material_stock.rs`: Logic for managing material amounts, accrual, and cargo.
+    - `universe/src/generator.rs`: Generation logic for universe entities.
+    - `universe/src/star_id.rs`: Helpers for star identification and location.
+    - `universe/src/settings.rs`: Global game constants and configuration.
+
