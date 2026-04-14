@@ -1,0 +1,26 @@
+pub mod checker;
+pub mod generator;
+pub mod hasher;
+pub mod material_stock;
+pub mod resources;
+pub mod settings;
+pub mod ships;
+pub mod star_id;
+
+pub use material_stock::{
+    accrue_settled, clamp_settled_to_capacity, get_amount, material_from_kind_kt, merge_add_kt,
+    merge_into_cargo, mining_rates_hash_from_pairs, normalize_material_vec,
+    theoretical_materials_after_accrual, total_kt, total_rate_kt_s, try_subtract_materials,
+};
+pub use resources::{
+    BASELINE_CREDITS_PER_KT_HELIUM, BASELINE_CREDITS_PER_KT_IRON, Material, MaterialKind,
+    baseline_credits_per_kt, credits_for_kt_sale, credits_for_materials_sale,
+};
+pub use ships::{ShipAttackMode, ShipStats, battery_charge_duration_secs, travel_duration_secs};
+pub use star_id::{parse_star_id, star_display_id, star_location_id};
+
+#[cfg(test)]
+pub mod sync_tests;
+
+#[cfg(feature = "spacetimedb")]
+pub use ships::{ShipAtStar, ShipInTransit, ShipLocation, ship_location_from_flat};
