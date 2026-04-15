@@ -1,7 +1,7 @@
 use crate::auth::Claims;
 use crate::error::AppError;
 use crate::types::{AppState, Ship};
-use axum::{extract::Path, extract::State, Extension, Json};
+use axum::{Extension, Json, extract::Path, extract::State};
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use universe::checker::star_is_at_point;
@@ -65,12 +65,16 @@ pub async fn warp_ship_handler(
 
     // 3. Check jump readiness
     if ship.jump_ready_at > OffsetDateTime::now_utc() {
-        return Err(AppError::Internal("Ship jump drive is recharging".to_string()));
+        return Err(AppError::Internal(
+            "Ship jump drive is recharging".to_string(),
+        ));
     }
 
     // 4. Validate target star existence
     if !star_is_at_point(req.x, req.y) {
-        return Err(AppError::Internal("No star exists at target coordinates".to_string()));
+        return Err(AppError::Internal(
+            "No star exists at target coordinates".to_string(),
+        ));
     }
 
     // 5. Calculate distance and check range
@@ -88,8 +92,7 @@ pub async fn warp_ship_handler(
 
     // 6. Calculate arrival time
     let duration_secs = travel_duration_secs(distance, ship.stats.speed_lys);
-    let scheduled_at =
-        OffsetDateTime::now_utc() + time::Duration::seconds_f64(duration_secs);
+    let scheduled_at = OffsetDateTime::now_utc() + time::Duration::seconds_f64(duration_secs);
 
     // 7. Create warp job and update ship status
     let job = sqlx::query_as::<_, WarpJob>(
