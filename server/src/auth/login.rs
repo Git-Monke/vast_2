@@ -1,8 +1,5 @@
-use crate::AppState;
-use argon2::{
-    Argon2, PasswordHash, PasswordVerifier,
-    password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
-};
+use crate::types::AppState;
+use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use axum::{Json, extract::State, http::StatusCode};
 use jsonwebtoken::{EncodingKey, Header, encode};
 use serde::{Deserialize, Serialize};
@@ -27,47 +24,6 @@ pub struct Claims {
     pub username: String,
     pub exp: usize,
     pub iat: usize,
-}
-
-pub async fn register_user(
-    State(state): State<AppState>,
-    Json(payload): Json<AuthRequest>,
-) -> Result<StatusCode, (StatusCode, String)> {
-    // 1. Hash password
-    let salt = SaltString::generate(&mut OsRng);
-    let argon2 = Argon2::default();
-    let password_hash = argon2
-        .hash_password(payload.password.as_bytes(), &salt)
-        .map_err(|_| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Failed to hash password".to_string(),
-            )
-        })?
-        .to_string();
-
-    // 2. Save to DB
-    let user_id = Uuid::new_v4();
-
-    sqlx::query("INSERT INTO users (id, username, password_hash) VALUES ($1, $2, $3)")
-        .bind(user_id)
-        .bind(payload.username)
-        .bind(password_hash)
-        .execute(&state.pool)
-        .await
-        .map_err(|e| {
-            if let Some(db_err) = e.as_database_error() {
-                if db_err.is_unique_violation() {
-                    return (StatusCode::CONFLICT, "Username already exists".to_string());
-                }
-            }
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Database error".to_string(),
-            )
-        })?;
-
-    Ok(StatusCode::CREATED)
 }
 
 pub async fn authorize(

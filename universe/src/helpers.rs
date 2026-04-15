@@ -17,8 +17,8 @@ fn sample_disk_grid_point(rng: &mut ThreadRng, r_grid: f64) -> (i32, i32) {
 }
 
 /// Row-major scan of a [`STARTER_LOCAL_GRID`]×[`STARTER_LOCAL_GRID`] region centered on `(anchor_x, anchor_y)`.
-fn try_find_red_dwarf_in_range(
-    rng: &mut ThreadRng,
+pub fn try_find_red_dwarf_in_range(
+    _rng: &mut ThreadRng,
     anchor_x: i32,
     anchor_y: i32,
 ) -> Option<(i32, i32)> {
@@ -29,15 +29,15 @@ fn try_find_red_dwarf_in_range(
             let Some((star_type, _)) = star_info_at(gx, gy) else {
                 continue;
             };
-            if star_type != StarType::Red {
-                continue;
+            if star_type == StarType::Red {
+                return Some((gx, gy));
             }
         }
     }
     None
 }
 
-pub(crate) fn find_empty_red_dwarf_starter() -> Option<(i32, i32)> {
+pub fn find_empty_red_dwarf_starter() -> Option<(i32, i32)> {
     let mut rng = rand::rng();
     let r_grid = STARTER_DISK_RADIUS_LY * f64::from(COORD_UNITS_PER_LY);
     for _ in 0..MAX_STARTER_SAMPLE_ATTEMPTS {

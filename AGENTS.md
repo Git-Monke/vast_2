@@ -5,6 +5,8 @@ In the server/ folder, schema changes are made via migrations. You have to first
 `sqlx migrate add migration_name`
 Then in the new file you write the migration. DO NOT AUTO COMMIT THE MIGRATION, the user will do that
 
+ONCE YOURE DONE WITH A CHANGE, COMMIT IT!
+
 ## Project Structure Overview
 
 - `server/`: The backend API layer.

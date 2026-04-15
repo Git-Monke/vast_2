@@ -1,5 +1,3 @@
-mod auth;
-
 use axum::{
     Extension, Json, Router, middleware,
     routing::{get, post},
@@ -11,6 +9,9 @@ use tracing;
 use tracing_subscriber;
 use universe::{Material, ShipStats};
 use uuid::Uuid;
+
+use server::auth;
+use server::types::AppState;
 
 #[derive(Serialize, Deserialize, Clone, sqlx::FromRow)]
 pub struct Ship {
@@ -25,11 +26,6 @@ pub struct Ship {
     pub jump_ready_at: time::OffsetDateTime,
     pub health: i32,
     pub docked_at: Option<i64>,
-}
-
-#[derive(Clone)]
-pub struct AppState {
-    pub pool: sqlx::PgPool,
 }
 
 #[tokio::main]
@@ -78,7 +74,7 @@ async fn get_ships(
         )
     })?;
 
-    let ships = sqlx::query_as::<_, Ship>("SELECT * FROM ships WHERE owner_id = $1")
+    let ships = sqlx::query_as::<sqlx::Postgres, Ship>("SELECT * FROM ships WHERE owner_id = $1")
         .bind(owner_id)
         .fetch_all(&state.pool)
         .await
