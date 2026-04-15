@@ -149,16 +149,40 @@ async fn complete_warp_job(state: AppState, job_id: i64) -> Result<(), AppError>
         .await
         .map_err(|e| AppError::Internal(e.to_string()))?;
 
-    let job = sqlx::query!("SELECT * FROM warp_jobs WHERE id = $1", job_id)
-        .fetch_optional(&mut *tx)
-        .await
-        .map_err(|e| AppError::Internal(e.to_string()))?
-        .ok_or_else(|| AppError::Internal("Warp job not found".to_string()))?;
+    let job = sqlx::query!(
+        r#"
+        SELECT 
+            wj.*,
+            s.stats as "stats: serde_json::Value"
+        FROM warp_jobs wj
+        JOIN ships s ON wj.ship_id = s.id
+        WHERE wj.id = $1
+        "#,
+        job_id
+    )
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(|e| AppError::Internal(e.to_string()))?
+    .ok_or_else(|| AppError::Internal("Warp job not found".to_string()))?;
+
+    let (star_type, _) = universe::generator::star_info_at(job.to_star_x, job.to_star_y)
+        .ok_or_else(|| AppError::Internal("Target star not found".to_string()))?;
+
+    let stats: universe::ships::ShipStats = serde_json::from_value(job.stats)
+        .map_err(|e| AppError::Internal(format!("Failed to parse ship stats: {}", e)))?;
+
+    let recharge_secs = universe::ships::battery_charge_duration_secs(
+        stats.size_kt,
+        stats.battery_ly,
+        star_type.temperature_k(),
+    );
+    let jump_ready_at = OffsetDateTime::now_utc() + time::Duration::seconds_f64(recharge_secs);
 
     sqlx::query!(
-        "UPDATE ships SET star_x = $1, star_y = $2, in_transit = false WHERE id = $3",
+        "UPDATE ships SET star_x = $1, star_y = $2, in_transit = false, jump_ready_at = $3 WHERE id = $4",
         job.to_star_x,
         job.to_star_y,
+        jump_ready_at,
         job.ship_id
     )
     .execute(&mut *tx)
