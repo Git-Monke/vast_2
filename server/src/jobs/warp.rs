@@ -8,9 +8,12 @@ use universe::checker::star_is_at_point;
 use universe::settings::distance_between_cells_ly;
 use universe::ships::travel_duration_secs;
 
+use time::serde::rfc3339;
+
 #[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 pub struct WarpJob {
     pub id: i64,
+    #[serde(with = "rfc3339")]
     pub scheduled_at: OffsetDateTime,
     pub ship_id: i64,
     pub to_star_x: i32,
