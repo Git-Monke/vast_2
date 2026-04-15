@@ -18,7 +18,8 @@ pub fn battery_charge_duration_secs(size_kt: u32, battery_ly: u32, star_temp_k: 
     0.1 * f64::from(size_kt) * f64::from(battery_ly) / (t / 1000.0)
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize, sqlx::Type)]
+#[sqlx(type_name = "ship_attack_mode")]
 pub enum ShipAttackMode {
     Defend,
     StrikeFirst,

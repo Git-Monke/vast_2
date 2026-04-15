@@ -2,31 +2,13 @@ use axum::{
     Extension, Json, Router, middleware,
     routing::{get, post},
 };
-use sqlx::types::Json as SQLJson;
 
-use serde::{Deserialize, Serialize};
 use tracing;
 use tracing_subscriber;
-use universe::{Material, ShipStats};
 use uuid::Uuid;
 
 use server::auth;
-use server::types::AppState;
-
-#[derive(Serialize, Deserialize, Clone, sqlx::FromRow)]
-pub struct Ship {
-    pub id: i64,
-    pub owner_id: Uuid,
-    pub stats: SQLJson<ShipStats>,
-    pub cargo: SQLJson<Vec<Material>>,
-    pub attack_mode: String,
-    pub in_transit: bool,
-    pub star_x: i32,
-    pub star_y: i32,
-    pub jump_ready_at: time::OffsetDateTime,
-    pub health: i32,
-    pub docked_at: Option<i64>,
-}
+use server::types::{AppState, Ship};
 
 #[tokio::main]
 async fn main() {
