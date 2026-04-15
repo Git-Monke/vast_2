@@ -8,6 +8,7 @@ use tracing_subscriber;
 use uuid::Uuid;
 
 use server::auth;
+use server::jobs::warp::warp_ship_handler;
 use server::types::{AppState, Ship};
 
 #[tokio::main]
@@ -25,7 +26,7 @@ async fn main() {
     let protected_routes =
         Router::new()
             .route("/ships", get(get_ships))
-            .route("/ships/:id/warp", post(warp_ship))
+            .route("/ships/:id/warp", post(warp_ship_handler))
             .layer(middleware::from_fn_with_state(
                 state.clone(),
                 auth::auth_middleware,
@@ -64,12 +65,4 @@ async fn get_ships(
         .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     Ok(Json(ships))
-}
-
-async fn warp_ship(
-    axum::extract::Path(_id): axum::extract::Path<u64>,
-    Extension(_claims): Extension<auth::Claims>,
-    _state: axum::extract::State<AppState>,
-) -> &'static str {
-    "Hello world"
 }

@@ -1,10 +1,22 @@
+use axum::{extract::Path, Extension, extract::State};
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
+use crate::types::AppState;
+use crate::auth::Claims;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 pub struct WarpJob {
     pub scheduled_id: i64,
-    pub scheduled_at: chrono::DateTime<chrono::Utc>,
+    pub scheduled_at: OffsetDateTime,
     pub ship_id: i64,
     pub to_star_x: i32,
     pub to_star_y: i32,
+}
+
+pub async fn warp_ship_handler(
+    Path(id): Path<u64>,
+    Extension(_claims): Extension<Claims>,
+    _state: State<AppState>,
+) -> String {
+    format!("hello {}", id)
 }
