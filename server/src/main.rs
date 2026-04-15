@@ -23,14 +23,13 @@ async fn main() {
 
     let state = AppState { pool };
 
-    let protected_routes =
-        Router::new()
-            .route("/ships", get(get_ships))
-            .route("/ships/:id/warp", post(warp_ship_handler))
-            .layer(middleware::from_fn_with_state(
-                state.clone(),
-                auth::auth_middleware,
-            ));
+    let protected_routes = Router::new()
+        .route("/ships", get(get_ships))
+        .route("/ships/{id}/warp", post(warp_ship_handler))
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            auth::auth_middleware,
+        ));
 
     let app = Router::new()
         .route("/register", post(auth::register_user))
