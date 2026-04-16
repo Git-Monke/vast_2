@@ -7,6 +7,7 @@ use tracing;
 use tracing_subscriber;
 
 use server::auth;
+use server::battle::handlers::battle_handler;
 use server::buildings;
 use server::jobs::warp::warp_ship_handler;
 use server::presence;
@@ -31,6 +32,7 @@ async fn main() {
         .route("/ships/{id}/dock", post(ships::dock_ship))
         .route("/ships/{id}/undock", post(ships::undock_ship))
         .route("/systems/{x}/{y}", get(presence::get_star_system))
+        .route("/systems/{x}/{y}/battle", post(battle_handler))
         .route("/buildings", post(buildings::build_building))
         .layer(middleware::from_fn_with_state(
             state.clone(),
