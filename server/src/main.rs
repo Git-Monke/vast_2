@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use server::auth;
 use server::jobs::warp::warp_ship_handler;
-use server::types::{AppState, Ship, StarSystemStock, StarSystemDetails};
+use server::types::{AppState, Building, Ship, StarSystemStock, StarSystemDetails};
 use universe::generator::generate_star;
 
 #[tokio::main]
@@ -97,9 +97,19 @@ async fn get_star_system(
     .await
     .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
+    let buildings = sqlx::query_as::<_, Building>(
+        "SELECT id, star_x, star_y, planet_index, slot_index, kind, level, degradation_percent, mining_material, owner_id, attack_mode, health FROM buildings WHERE star_x = $1 AND star_y = $2"
+    )
+    .bind(x)
+    .bind(y)
+    .fetch_all(&state.pool)
+    .await
+    .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
     Ok(Json(StarSystemDetails {
         system,
         stock,
+        buildings,
         ships,
     }))
 }
