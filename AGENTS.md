@@ -38,4 +38,6 @@ ONCE YOURE DONE WITH A CHANGE, COMMIT IT!
     - `universe/src/hasher.rs`: Deterministic hashing for universe generation.
     - `universe/src/helpers.rs`: General utility functions.
     - `universe/src/bin/star_finder.rs`: CLI tool for finding stars near coordinates (e.g. `cargo run --bin star_finder -- 0 0 100`).
+- `universe/src/battle.rs`: Battle resolution logic (`run_battle`, `CombatantData`, `CombatantResult`, `CombatantId`).
+- `universe/src/buildings.rs`: Building game logic (`garrison_stats` for MilitaryGarrison combat stats).
 
