@@ -1,7 +1,7 @@
 use crate::buildings::prices::{get_mining_rate_kt_s, get_warehouse_capacity_kt};
 use crate::types::{Building, BuildingKind};
-use sqlx::PgConnection;
 use sqlx::types::Json;
+use sqlx::{PgConnection, PgPool};
 use universe::Material;
 use universe::MaterialKind;
 use universe::material_stock::{accrue_settled, mining_rates_hash_from_pairs};
@@ -15,7 +15,7 @@ fn parse_material_kind(s: &str) -> Option<MaterialKind> {
 }
 
 pub async fn settle_star_system_stock(
-    tx: &mut PgConnection,
+    tx: &PgPool,
     star_x: i32,
     star_y: i32,
 ) -> Result<(), sqlx::Error> {
@@ -29,7 +29,7 @@ pub async fn settle_star_system_stock(
         star_x,
         star_y
     )
-    .fetch_optional(&mut *tx)
+    .fetch_optional(tx)
     .await?;
 
     let now = time::OffsetDateTime::now_utc();
@@ -55,7 +55,7 @@ pub async fn settle_star_system_stock(
         star_x,
         star_y
     )
-    .fetch_all(&mut *tx)
+    .fetch_all(tx)
     .await?;
 
     let mut total_capacity_kt = 0.0;
@@ -106,7 +106,7 @@ pub async fn settle_star_system_stock(
     .bind(star_y)
     .bind(now)
     .bind(settled_json)
-    .execute(&mut *tx)
+    .execute(tx)
     .await?;
 
     Ok(())

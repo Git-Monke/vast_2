@@ -62,9 +62,10 @@ pub async fn build_building(
     )
     .fetch_one(&state.pool)
     .await
-    .unwrap_or(None);
+    .unwrap_or(Some(false))
+    .unwrap_or(false);
 
-    if existing_building.is_some() {
+    if existing_building {
         return Err((
             StatusCode::CONFLICT,
             "There is already a buildling at this location".to_string(),
@@ -138,7 +139,7 @@ pub async fn build_building(
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     // Settle stock before adding a new building
-    crate::stock::logic::settle_star_system_stock(&mut *tx, req.star_x, req.star_y)
+    crate::stock::logic::settle_star_system_stock(&state.pool, req.star_x, req.star_y)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 

@@ -1,5 +1,6 @@
 use crate::auth;
 use crate::presence::logic::check_presence;
+use crate::stock::logic::settle_star_system_stock;
 use crate::types::{AppState, Building, Ship, StarSystemDetails, StarSystemStock};
 use axum::{
     Extension, Json,
@@ -36,8 +37,12 @@ pub async fn get_star_system(
         "System not found".to_string(),
     ))?;
 
+    settle_star_system_stock(&state.pool, x, y)
+        .await
+        .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
     let stock = sqlx::query_as::<_, StarSystemStock>(
-        "SELECT star_x, star_y, last_settled_at, capacity_kt, settled FROM star_system_stock WHERE star_x = $1 AND star_y = $2"
+        "SELECT star_x, star_y, last_settled_at, settled FROM star_system_stock WHERE star_x = $1 AND star_y = $2"
     )
     .bind(x)
     .bind(y)

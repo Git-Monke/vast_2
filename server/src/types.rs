@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use sqlx::types::Json;
+use time::serde::rfc3339;
 use universe::{Material, ShipAttackMode, ShipStats, generator::StarSystem};
 use uuid::Uuid;
 
@@ -54,6 +55,7 @@ pub struct Building {
 pub struct StarSystemStock {
     pub star_x: i32,
     pub star_y: i32,
+    #[serde(with = "rfc3339")]
     pub last_settled_at: time::OffsetDateTime,
     pub settled: Json<Vec<Material>>,
 }
