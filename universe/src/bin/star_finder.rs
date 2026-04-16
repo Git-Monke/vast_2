@@ -34,6 +34,7 @@ fn main() {
     println!("{:<10} {:<10} {:<15} {:<10} {:<10}", "X", "Y", "Type", "Size", "Dist");
     for (x, y, star_type, size, dist_sq) in found_stars {
         let dist = (dist_sq as f64).sqrt();
-        println!("{:<10} {:<10} {:<15?} {:<10.2} {:<10.2}", x, y, star_type, size, dist);
+        let star_type_str = format!("{:?}", star_type);
+        println!("{:<10} {:<10} {:<15} {:<10.2} {:<10.2}", x, y, star_type_str, size, dist);
     }
 }
