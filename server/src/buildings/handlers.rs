@@ -46,11 +46,36 @@ pub async fn build_building(
         ));
     }
 
+    let existing_building = sqlx::query_scalar!(
+        r#"
+    SELECT EXISTS(
+        SELECT 1 FROM buildings
+        WHERE star_x = $1
+        AND star_y = $2
+        AND planet_index = $3
+        AND slot_index = $4
+    )"#,
+        req.star_x,
+        req.star_y,
+        req.planet_index,
+        req.slot_index
+    )
+    .fetch_one(&state.pool)
+    .await
+    .unwrap_or(None);
+
+    if existing_building.is_some() {
+        return Err((
+            StatusCode::CONFLICT,
+            "There is already a buildling at this location".to_string(),
+        ));
+    }
+
     // 2. Get the heaviest ship in the system owned by the player
     // Note: We only consider ships that are NOT in transit.
     let max_mass: Option<f64> = sqlx::query_scalar!(
         r#"
-        SELECT MAX((stats->'mass_kt')::text::double precision)
+        SELECT MAX((stats->'size_kt')::text::double precision)
         FROM ships 
         WHERE owner_id = $1 AND star_x = $2 AND star_y = $3 AND in_transit = FALSE
         "#,
