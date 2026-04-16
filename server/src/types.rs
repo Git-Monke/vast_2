@@ -16,12 +16,20 @@ pub struct Ship {
     pub stats: Json<ShipStats>,
     pub cargo: Json<Vec<Material>>,
     pub attack_mode: ShipAttackMode,
-    pub in_transit: bool,
+    #[serde(with = "time::serde::rfc3339::option")]
+    pub warp_completed_at: Option<time::OffsetDateTime>,
     pub star_x: i32,
     pub star_y: i32,
     pub jump_ready_at: time::OffsetDateTime,
     pub health: i32,
     pub docked_at: Option<i64>,
+}
+
+impl Ship {
+    pub fn is_warping(&self) -> bool {
+        self.warp_completed_at
+            .map_or(false, |t| t > time::OffsetDateTime::now_utc())
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, sqlx::Type)]

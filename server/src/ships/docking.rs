@@ -43,10 +43,10 @@ pub async fn dock_ship(
         "Ship not found".to_string(),
     ))?;
 
-    if ship.in_transit {
+    if ship.is_warping() {
         return Err((
             axum::http::StatusCode::BAD_REQUEST,
-            "Ship is in transit".to_string(),
+            "Ship is warping".to_string(),
         ));
     }
 

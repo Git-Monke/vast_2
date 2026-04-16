@@ -78,7 +78,7 @@ pub async fn build_building(
         r#"
         SELECT MAX((stats->'size_kt')::text::double precision)
         FROM ships 
-        WHERE owner_id = $1 AND star_x = $2 AND star_y = $3 AND in_transit = FALSE
+        WHERE owner_id = $1 AND star_x = $2 AND star_y = $3 AND (warp_completed_at IS NULL OR warp_completed_at <= NOW())
         "#,
         owner_id,
         req.star_x,

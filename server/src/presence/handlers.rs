@@ -51,7 +51,7 @@ pub async fn get_star_system(
     .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     let ships = sqlx::query_as::<_, Ship>(
-        "SELECT * FROM ships WHERE star_x = $1 AND star_y = $2 AND in_transit = false",
+        "SELECT * FROM ships WHERE star_x = $1 AND star_y = $2 AND (warp_completed_at IS NULL OR warp_completed_at <= NOW())",
     )
     .bind(x)
     .bind(y)

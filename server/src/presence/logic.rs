@@ -40,7 +40,7 @@ pub async fn update_presence(
         r#"
         SELECT EXISTS (
             SELECT 1 FROM ships 
-            WHERE owner_id = $1 AND star_x = $2 AND star_y = $3 AND in_transit = FALSE
+            WHERE owner_id = $1 AND star_x = $2 AND star_y = $3 AND (warp_completed_at IS NULL OR warp_completed_at <= NOW())
         ) as "exists!"
         "#,
         empire_id,
