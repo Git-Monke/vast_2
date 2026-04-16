@@ -13,6 +13,9 @@ ONCE YOURE DONE WITH A CHANGE, COMMIT IT!
     - `server/src/main.rs`: Entry point for the server, contains route definitions and main application logic.
     - `server/src/auth.rs`: Authentication logic, including JWT handling and login/registration handlers.
     - `server/src/error.rs`: Error handling and custom error types for the server.
+    - `server/src/jobs/`: Background tasks like warp travel.
+    - `server/src/presence/`: Player visibility in star systems.
+    - `server/src/types.rs`: Database and API response models.
 
 - `universe/`: Core game logic and shared types.
     - `universe/src/ships.rs`: Ship statistics, travel logic, and combat-related structures.
@@ -21,4 +24,7 @@ ONCE YOURE DONE WITH A CHANGE, COMMIT IT!
     - `universe/src/generator.rs`: Generation logic for universe entities.
     - `universe/src/star_id.rs`: Helpers for star identification and location.
     - `universe/src/settings.rs`: Global game constants and configuration.
+    - `universe/src/checker.rs`: Logic for validating game actions.
+    - `universe/src/hasher.rs`: Deterministic hashing for universe generation.
+    - `universe/src/helpers.rs`: General utility functions.
 
