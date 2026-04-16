@@ -1,5 +1,6 @@
 use crate::auth;
 use crate::buildings::prices::{get_depot_used_capacity_kt, get_ship_depot_capacity_kt};
+use crate::presence::check_enemy_garrison;
 use crate::types::{AppState, Building, BuildingKind, Ship};
 use axum::{
     Extension, Json,
@@ -74,6 +75,18 @@ pub async fn dock_ship(
         return Err((
             axum::http::StatusCode::BAD_REQUEST,
             "Building is not a Ship Depot".to_string(),
+        ));
+    }
+
+    // Garrison protection: ensure no enemy garrison in this system
+    if let Some(_garrison_owner) =
+        check_enemy_garrison(&state.pool, owner_id, req.star_x, req.star_y)
+            .await
+            .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+    {
+        return Err((
+            axum::http::StatusCode::FORBIDDEN,
+            "Cannot dock in a system with enemy garrison".to_string(),
         ));
     }
 

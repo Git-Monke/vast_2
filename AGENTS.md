@@ -43,3 +43,5 @@ ONCE YOURE DONE WITH A CHANGE, COMMIT IT!
 - `universe/src/battle.rs`: Battle resolution logic (`run_battle`, `CombatantData`, `CombatantResult`, `CombatantId`).
 - `universe/src/buildings.rs`: Building game logic (`garrison_stats` for MilitaryGarrison combat stats).
 
+- Added `check_enemy_garrison` in `server/src/presence/logic.rs` and integrated it into building construction and ship docking for garrison protection.
+

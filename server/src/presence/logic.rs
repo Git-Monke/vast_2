@@ -102,3 +102,30 @@ pub async fn update_presence(
 
     Ok(())
 }
+
+/// Returns the owner_id of an enemy garrison (MilitaryGarrison) if one exists in the given system.
+/// If no enemy garrison is present, returns `Ok(None)`.
+/// Errors are wrapped in `AppError`.
+pub async fn check_enemy_garrison(
+    pool: &PgPool,
+    empire_id: Uuid,
+    star_x: i32,
+    star_y: i32,
+) -> Result<Option<Uuid>, AppError> {
+    // Look for any MilitaryGarrison building owned by a different empire.
+    let row = sqlx::query!(
+        r#"
+        SELECT owner_id FROM buildings
+        WHERE kind = 'MilitaryGarrison' AND star_x = $1 AND star_y = $2 AND owner_id <> $3
+        LIMIT 1
+        "#,
+        star_x,
+        star_y,
+        empire_id
+    )
+    .fetch_optional(pool)
+    .await?;
+
+    // `owner_id` is nullable, so we need to flatten the Option<Option<Uuid>>.
+    Ok(row.and_then(|r| r.owner_id))
+}

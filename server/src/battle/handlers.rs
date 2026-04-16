@@ -1,8 +1,8 @@
-use axum::{Extension, Json, extract::Path, http::StatusCode, extract::State};
+use axum::{Extension, Json, extract::Path, extract::State, http::StatusCode};
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{auth, battle::logic::execute_battle, types::AppState, error::AppError};
+use crate::{auth, battle::logic::execute_battle, error::AppError, types::AppState};
 
 #[derive(Deserialize)]
 pub struct BattleRequest {
@@ -22,7 +22,10 @@ pub async fn battle_handler(
     Path((x, y)): Path<(i32, i32)>,
 ) -> Result<Json<BattleResponse>, (StatusCode, String)> {
     let initiator = Uuid::parse_str(&claims.sub).map_err(|_| {
-        (StatusCode::BAD_REQUEST, "Invalid user ID in token".to_string())
+        (
+            StatusCode::BAD_REQUEST,
+            "Invalid user ID in token".to_string(),
+        )
     })?;
 
     let result = execute_battle(&state.pool, x, y, initiator)

@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::{
     auth,
-    presence::check_presence,
+    presence::{check_enemy_garrison, check_presence},
     types::{AppState, Building, BuildingKind},
 };
 
@@ -43,6 +43,18 @@ pub async fn build_building(
         return Err((
             StatusCode::FORBIDDEN,
             "Player has no presence in this star system".to_string(),
+        ));
+    }
+
+    // Garrison protection: ensure no enemy garrison in this system
+    if let Some(_garrison_owner) =
+        check_enemy_garrison(&state.pool, owner_id, req.star_x, req.star_y)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+    {
+        return Err((
+            StatusCode::FORBIDDEN,
+            "Cannot build in a system with enemy garrison".to_string(),
         ));
     }
 

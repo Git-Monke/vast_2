@@ -1,2 +1,2 @@
-pub mod logic;
 pub mod handlers;
+pub mod logic;
