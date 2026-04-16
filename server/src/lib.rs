@@ -5,4 +5,5 @@ pub mod jobs;
 pub mod presence;
 pub mod ships;
 
+pub mod stock;
 pub mod types;

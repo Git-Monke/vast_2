@@ -137,6 +137,11 @@ pub async fn build_building(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
+    // Settle stock before adding a new building
+    crate::stock::logic::settle_star_system_stock(&mut *tx, req.star_x, req.star_y)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
     // Deduct credits
     sqlx::query("UPDATE users SET credits = credits - $1 WHERE id = $2")
         .bind(cost)

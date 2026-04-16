@@ -55,7 +55,6 @@ pub struct StarSystemStock {
     pub star_x: i32,
     pub star_y: i32,
     pub last_settled_at: time::OffsetDateTime,
-    pub capacity_kt: f64,
     pub settled: Json<Vec<Material>>,
 }
 

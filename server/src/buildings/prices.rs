@@ -50,3 +50,13 @@ pub fn building_has_owner(kind: &BuildingKind) -> bool {
 pub fn building_has_health(kind: &BuildingKind) -> bool {
     matches!(kind, BuildingKind::MilitaryGarrison)
 }
+
+/// Returns warehouse capacity in kilotons for a given level.
+pub fn get_warehouse_capacity_kt(level: i32) -> f64 {
+    10000.0 * (level as f64).powf(1.5)
+}
+
+/// Returns mining rate in kilotons per second for a given level.
+pub fn get_mining_rate_kt_s(level: i32) -> f64 {
+    1.0 * (level as f64).powf(1.5)
+}
