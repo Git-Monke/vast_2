@@ -14,7 +14,7 @@ ONCE YOURE DONE WITH A CHANGE, COMMIT IT!
     - `server/src/auth.rs`: Authentication logic, including JWT handling and login/registration handlers.
     - `server/src/error.rs`: Error handling and custom error types for the server.
     - `server/src/jobs/`: Background tasks like warp travel and ship buildling. Warp jobs now track starting coordinates to update presence on departure.
-    - `server/src/presence/`: Player visibility in star systems. Contains `get_star_system` handler.
+    - `server/src/presence/`: Player visibility in star systems. Broken into `logic.rs` (DB checks/updates) and `handlers.rs` (API handlers).
     - `server/src/ships/`: Ship-related handlers. Contains `get_ships` handler.
     - `server/src/types.rs`: Database and API response models.
 
