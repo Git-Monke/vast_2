@@ -1,19 +1,17 @@
 use axum::{
-    Extension, Json, Router,
-    extract::{Path, State},
+    Router,
     middleware,
     routing::{get, post},
 };
 
 use tracing;
 use tracing_subscriber;
-use uuid::Uuid;
 
 use server::auth;
 use server::presence;
+use server::ships;
 use server::jobs::warp::warp_ship_handler;
-use server::types::{AppState, Building, Ship, StarSystemDetails, StarSystemStock};
-use universe::generator::generate_star;
+use server::types::AppState;
 
 #[tokio::main]
 async fn main() {
@@ -28,9 +26,9 @@ async fn main() {
     let state = AppState { pool };
 
     let protected_routes = Router::new()
-        .route("/ships", get(get_ships))
+        .route("/ships", get(ships::get_ships))
         .route("/ships/{id}/warp", post(warp_ship_handler))
-        .route("/systems/{x}/{y}", get(get_star_system))
+        .route("/systems/{x}/{y}", get(presence::get_star_system))
         .layer(middleware::from_fn_with_state(
             state.clone(),
             auth::auth_middleware,
@@ -49,83 +47,4 @@ async fn main() {
     tracing::info!("Server is starting");
 
     axum::serve(listener, app).await.expect("Failed to serve");
-}
-
-async fn get_ships(
-    Extension(claims): Extension<auth::Claims>,
-    state: axum::extract::State<AppState>,
-) -> Result<Json<Vec<Ship>>, (axum::http::StatusCode, String)> {
-    let owner_id = Uuid::parse_str(&claims.sub).map_err(|_| {
-        (
-            axum::http::StatusCode::BAD_REQUEST,
-            "Invalid user ID".to_string(),
-        )
-    })?;
-
-    let ships = sqlx::query_as::<sqlx::Postgres, Ship>("SELECT * FROM ships WHERE owner_id = $1")
-        .bind(owner_id)
-        .fetch_all(&state.pool)
-        .await
-        .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
-    Ok(Json(ships))
-}
-
-async fn get_star_system(
-    Path((x, y)): Path<(i32, i32)>,
-    Extension(claims): Extension<auth::Claims>,
-    State(state): State<AppState>,
-) -> Result<Json<StarSystemDetails>, (axum::http::StatusCode, String)> {
-    let empire_id = Uuid::parse_str(&claims.sub)
-        .map_err(|_| (axum::http::StatusCode::BAD_REQUEST, "Invalid empire ID in token".to_string()))?;
-
-    let has_presence = presence::check_presence(&state.pool, empire_id, x, y)
-        .await
-        .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
-    if !has_presence {
-        return Err((
-            axum::http::StatusCode::FORBIDDEN,
-            "You do not have presence in this system".to_string(),
-        ));
-    }
-
-    let system = generate_star(x, y, Some(0)).ok_or((
-        axum::http::StatusCode::NOT_FOUND,
-        "System not found".to_string(),
-    ))?;
-
-    let stock = sqlx::query_as::<_, StarSystemStock>(
-        "SELECT star_x, star_y, last_settled_at, capacity_kt, settled FROM star_system_stock WHERE star_x = $1 AND star_y = $2"
-    )
-    .bind(x)
-    .bind(y)
-    .fetch_optional(&state.pool)
-    .await
-    .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
-    let ships = sqlx::query_as::<_, Ship>(
-        "SELECT * FROM ships WHERE star_x = $1 AND star_y = $2 AND in_transit = false",
-    )
-    .bind(x)
-    .bind(y)
-    .fetch_all(&state.pool)
-    .await
-    .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
-    let buildings = sqlx::query_as::<_, Building>(
-        "SELECT id, star_x, star_y, planet_index, slot_index, kind, level, degradation_percent, mining_material, owner_id, attack_mode, health FROM buildings WHERE star_x = $1 AND star_y = $2"
-    )
-    .bind(x)
-    .bind(y)
-    .fetch_all(&state.pool)
-    .await
-    .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-
-    Ok(Json(StarSystemDetails {
-        system,
-        stock,
-        buildings,
-        ships,
-    }))
 }
