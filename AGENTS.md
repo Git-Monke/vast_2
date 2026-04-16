@@ -17,6 +17,8 @@ ONCE YOURE DONE WITH A CHANGE, COMMIT IT!
 
 ## Project Structure Overview
 
+*Note: Added cargo fmt and ensured code compiles without errors.*
+
 - `server/`: The backend API layer.
     - `server/src/main.rs`: Entry point for the server, contains route definitions and main application logic.
     - `server/src/auth.rs`: Authentication logic, including JWT handling and login/registration handlers.

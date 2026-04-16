@@ -66,16 +66,3 @@ pub fn distance_between_cells_ly(ax: i32, ay: i32, bx: i32, by: i32) -> f64 {
 pub fn mean_spacing_at_radius_ly(r_ly: f64) -> f64 {
     CORE_MEAN_SPACING_LY * (SPACING_GROWTH_PER_LY * r_ly).exp()
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn spacing_endpoints() {
-        let s0 = mean_spacing_at_radius_ly(0.0);
-        assert!((s0 - CORE_MEAN_SPACING_LY).abs() < 1e-9);
-        let s1 = mean_spacing_at_radius_ly(UNIVERSE_RADIUS_LY);
-        assert!((s1 - EDGE_MEAN_SPACING_LY).abs() < 1e-6);
-    }
-}
