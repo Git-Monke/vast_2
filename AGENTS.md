@@ -23,7 +23,8 @@ ONCE YOURE DONE WITH A CHANGE, COMMIT IT!
     - `server/src/error.rs`: Error handling and custom error types for the server.
     - `server/src/jobs/`: Background tasks like warp travel and ship buildling. Warp jobs now track starting coordinates to update presence on departure.
     - `server/src/presence/`: Player visibility in star systems. Broken into `logic.rs` (DB checks/updates) and `handlers.rs` (API handlers).
-    - `server/src/ships/`: Ship-related handlers. Contains `get_ships`, `dock_ship`, and `undock_ship`. It also contains helper functions `get_ship_depot_capacity_kt` and `get_depot_used_capacity_kt` to handle `ShipDepot` building capacity checks based on level.
+    - `server/src/ships/`: Ship-related handlers. Broken down into `get.rs` and `docking.rs`.
+- `server/src/buildings/prices.rs`: Building construction and pricing logic. Also contains helper functions `get_ship_depot_capacity_kt` and `get_depot_used_capacity_kt`.
     - `server/src/types.rs`: Database and API response models.
 
 - `universe/`: Core game logic and shared types.

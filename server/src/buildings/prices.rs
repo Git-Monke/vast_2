@@ -1,4 +1,4 @@
-use crate::types::BuildingKind;
+use crate::types::{BuildingKind, Ship};
 
 /// Returns the resource cost for a building of a certain type and level.
 pub fn get_building_cost(kind: BuildingKind, level: i32, sales_depot_count: i64) -> i64 {
@@ -59,4 +59,22 @@ pub fn get_warehouse_capacity_kt(level: i32) -> f64 {
 /// Returns mining rate in kilotons per second for a given level.
 pub fn get_mining_rate_kt_s(level: i32) -> f64 {
     (1.0 * (level as f64).powf(1.5)) / 100.0
+}
+
+pub fn get_ship_depot_capacity_kt(level: i32) -> u32 {
+    (10.0 * f32::powf(10.0, (level as f32 - 1.0) / 4.5)) as u32
+}
+
+pub async fn get_depot_used_capacity_kt(
+    pool: &sqlx::PgPool,
+    building_id: i64,
+) -> Result<u32, sqlx::Error> {
+    // Note: Later on, this must also sum the mass of ships currently under construction at this depot.
+    let ships = sqlx::query_as::<sqlx::Postgres, Ship>("SELECT * FROM ships WHERE docked_at = $1")
+        .bind(building_id)
+        .fetch_all(pool)
+        .await?;
+
+    let used_kt: u32 = ships.iter().map(|s| s.stats.size_kt).sum();
+    Ok(used_kt)
 }

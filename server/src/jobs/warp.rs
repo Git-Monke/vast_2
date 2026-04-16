@@ -50,6 +50,10 @@ pub async fn warp_ship_handler(
         return Err(AppError::Internal("Ship is already in transit".to_string()));
     }
 
+    if ship.docked_at.is_some() {
+        return Err(AppError::Internal("Ship is docked".to_string()));
+    }
+
     let existing_job = sqlx::query!("SELECT id FROM warp_jobs WHERE ship_id = $1", id)
         .fetch_optional(&state.pool)
         .await
