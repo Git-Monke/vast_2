@@ -7,6 +7,8 @@ Then in the new file you write the migration. DO NOT AUTO COMMIT THE MIGRATION, 
 
 ONCE YOURE DONE WITH A CHANGE, COMMIT IT!
 
+- `server/migrations/`: Database migrations. A `credits` column (BIGINT, default 5000) was added to the `users` table.
+
 ## Project Structure Overview
 
 - `server/`: The backend API layer.
