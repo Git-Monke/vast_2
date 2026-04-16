@@ -1,5 +1,6 @@
 use crate::auth::Claims;
 use crate::error::AppError;
+use crate::presence::update_presence;
 use crate::types::{AppState, Ship};
 use axum::{Extension, Json, extract::Path, extract::State};
 use serde::{Deserialize, Serialize};
@@ -18,6 +19,8 @@ pub struct WarpJob {
     pub ship_id: i64,
     pub to_star_x: i32,
     pub to_star_y: i32,
+    pub from_star_x: i32,
+    pub from_star_y: i32,
 }
 
 #[derive(Deserialize)]
@@ -85,7 +88,7 @@ pub async fn warp_ship_handler(
     let duration_secs = travel_duration_secs(distance, ship.stats.speed_lys);
     let scheduled_at = OffsetDateTime::now_utc() + time::Duration::seconds_f64(duration_secs);
 
-    let job = create_warp_job(state, id, req.x, req.y, scheduled_at).await?;
+    let job = create_warp_job(state, id, ship.star_x, ship.star_y, req.x, req.y, scheduled_at).await?;
 
     Ok(Json(job))
 }
@@ -93,6 +96,8 @@ pub async fn warp_ship_handler(
 pub async fn create_warp_job(
     state: AppState,
     ship_id: i64,
+    from_star_x: i32,
+    from_star_y: i32,
     to_star_x: i32,
     to_star_y: i32,
     scheduled_at: OffsetDateTime,
@@ -104,24 +109,34 @@ pub async fn create_warp_job(
         .map_err(|e| AppError::Internal(e.to_string()))?;
 
     let job = sqlx::query_as::<_, WarpJob>(
-        "INSERT INTO warp_jobs (scheduled_at, ship_id, to_star_x, to_star_y) 
-         VALUES ($1, $2, $3, $4) 
-         RETURNING id, scheduled_at, ship_id, to_star_x, to_star_y",
+        "INSERT INTO warp_jobs (scheduled_at, ship_id, from_star_x, from_star_y, to_star_x, to_star_y) 
+         VALUES ($1, $2, $3, $4, $5, $6) 
+         RETURNING id, scheduled_at, ship_id, from_star_x, from_star_y, to_star_x, to_star_y",
     )
     .bind(scheduled_at)
     .bind(ship_id)
+    .bind(from_star_x)
+    .bind(from_star_y)
     .bind(to_star_x)
     .bind(to_star_y)
     .fetch_one(&mut *tx)
     .await
     .map_err(|e| AppError::Internal(e.to_string()))?;
 
-    sqlx::query!("UPDATE ships SET in_transit = true WHERE id = $1", ship_id)
-        .execute(&mut *tx)
+    let ship = sqlx::query!(
+        "UPDATE ships SET in_transit = true WHERE id = $1 RETURNING owner_id",
+        ship_id
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|e| AppError::Internal(e.to_string()))?;
+
+    tx.commit()
         .await
         .map_err(|e| AppError::Internal(e.to_string()))?;
 
-    tx.commit()
+    // Update presence for the star system the ship just left
+    update_presence(&state.pool, ship.owner_id, from_star_x, from_star_y)
         .await
         .map_err(|e| AppError::Internal(e.to_string()))?;
 
@@ -152,8 +167,15 @@ async fn complete_warp_job(state: AppState, job_id: i64) -> Result<(), AppError>
     let job = sqlx::query!(
         r#"
         SELECT 
-            wj.*,
-            s.stats as "stats: serde_json::Value"
+            wj.id,
+            wj.scheduled_at,
+            wj.ship_id,
+            wj.from_star_x,
+            wj.from_star_y,
+            wj.to_star_x,
+            wj.to_star_y,
+            s.stats as "stats: serde_json::Value",
+            s.owner_id "owner_id: uuid::Uuid"
         FROM warp_jobs wj
         JOIN ships s ON wj.ship_id = s.id
         WHERE wj.id = $1
@@ -195,6 +217,16 @@ async fn complete_warp_job(state: AppState, job_id: i64) -> Result<(), AppError>
         .map_err(|e| AppError::Internal(e.to_string()))?;
 
     tx.commit()
+        .await
+        .map_err(|e| AppError::Internal(e.to_string()))?;
+
+    // Update presence for both old and new locations
+    // Old location: in case it was the last ship and now it has arrived elsewhere (redundant but safe)
+    // New location: ship is now at the destination and in_transit = false
+    update_presence(&state.pool, job.owner_id, job.from_star_x, job.from_star_y)
+        .await
+        .map_err(|e| AppError::Internal(e.to_string()))?;
+    update_presence(&state.pool, job.owner_id, job.to_star_x, job.to_star_y)
         .await
         .map_err(|e| AppError::Internal(e.to_string()))?;
 

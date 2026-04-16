@@ -1,6 +1,7 @@
 use axum::{
-    Extension, Json, Router, middleware,
+    Extension, Json, Router,
     extract::{Path, State},
+    middleware,
     routing::{get, post},
 };
 
@@ -10,7 +11,7 @@ use uuid::Uuid;
 
 use server::auth;
 use server::jobs::warp::warp_ship_handler;
-use server::types::{AppState, Building, Ship, StarSystemStock, StarSystemDetails};
+use server::types::{AppState, Building, Ship, StarSystemDetails, StarSystemStock};
 use universe::generator::generate_star;
 
 #[tokio::main]
@@ -36,7 +37,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/register", post(auth::register_user))
-        .route("/authorize", post(auth::authorize))
+        .route("/authenticate", post(auth::authorize))
         .merge(protected_routes)
         .with_state(state);
 
@@ -89,7 +90,7 @@ async fn get_star_system(
     .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     let ships = sqlx::query_as::<_, Ship>(
-        "SELECT * FROM ships WHERE star_x = $1 AND star_y = $2 AND in_transit = false"
+        "SELECT * FROM ships WHERE star_x = $1 AND star_y = $2 AND in_transit = false",
     )
     .bind(x)
     .bind(y)

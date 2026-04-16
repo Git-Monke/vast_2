@@ -1,6 +1,6 @@
+use crate::error::AppError;
 use sqlx::PgPool;
 use uuid::Uuid;
-use crate::error::AppError;
 
 /// Checks if a player has presence in a star system based on the player_presence table.
 pub async fn check_presence(
@@ -27,7 +27,7 @@ pub async fn check_presence(
 }
 
 /// Updates the player_presence table for a specific player and star system.
-/// Presence is granted if the player has at least one ship (not in transit) 
+/// Presence is granted if the player has at least one ship (not in transit)
 /// or a Radar building in the system.
 pub async fn update_presence(
     pool: &PgPool,
