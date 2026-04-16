@@ -88,7 +88,16 @@ pub async fn warp_ship_handler(
     let duration_secs = travel_duration_secs(distance, ship.stats.speed_lys);
     let scheduled_at = OffsetDateTime::now_utc() + time::Duration::seconds_f64(duration_secs);
 
-    let job = create_warp_job(state, id, ship.star_x, ship.star_y, req.x, req.y, scheduled_at).await?;
+    let job = create_warp_job(
+        state,
+        id,
+        ship.star_x,
+        ship.star_y,
+        req.x,
+        req.y,
+        scheduled_at,
+    )
+    .await?;
 
     Ok(Json(job))
 }

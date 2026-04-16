@@ -1,6 +1,5 @@
 use axum::{
-    Router,
-    middleware,
+    Router, middleware,
     routing::{get, post},
 };
 
@@ -8,9 +7,9 @@ use tracing;
 use tracing_subscriber;
 
 use server::auth;
+use server::jobs::warp::warp_ship_handler;
 use server::presence;
 use server::ships;
-use server::jobs::warp::warp_ship_handler;
 use server::types::AppState;
 
 #[tokio::main]

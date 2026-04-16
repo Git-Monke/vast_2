@@ -1,10 +1,7 @@
-use axum::{
-    extract::State,
-    Extension, Json,
-};
-use uuid::Uuid;
 use crate::auth;
 use crate::types::{AppState, Ship};
+use axum::{Extension, Json, extract::State};
+use uuid::Uuid;
 
 pub async fn get_ships(
     Extension(claims): Extension<auth::Claims>,

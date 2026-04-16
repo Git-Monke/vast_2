@@ -19,7 +19,7 @@ fn main() {
             let dx = x - target_x;
             let dy = y - target_y;
             let dist_sq = dx * dx + dy * dy;
-            
+
             if dist_sq <= radius * radius {
                 if let Some((star_type, size)) = star_info_at(x, y) {
                     found_stars.push((x, y, star_type, size, dist_sq));
@@ -30,11 +30,21 @@ fn main() {
 
     found_stars.sort_by_key(|&(_, _, _, _, dist_sq)| dist_sq);
 
-    println!("Found {} stars within radius {}:", found_stars.len(), radius);
-    println!("{:<10} {:<10} {:<15} {:<10} {:<10}", "X", "Y", "Type", "Size", "Dist");
+    println!(
+        "Found {} stars within radius {}:",
+        found_stars.len(),
+        radius
+    );
+    println!(
+        "{:<10} {:<10} {:<15} {:<10} {:<10}",
+        "X", "Y", "Type", "Size", "Dist"
+    );
     for (x, y, star_type, size, dist_sq) in found_stars {
         let dist = (dist_sq as f64).sqrt();
         let star_type_str = format!("{:?}", star_type);
-        println!("{:<10} {:<10} {:<15} {:<10.2} {:<10.2}", x, y, star_type_str, size, dist);
+        println!(
+            "{:<10} {:<10} {:<15} {:<10.2} {:<10.2}",
+            x, y, star_type_str, size, dist
+        );
     }
 }
