@@ -11,7 +11,7 @@ use uuid::Uuid;
 use server::auth;
 use server::jobs::warp::warp_ship_handler;
 use server::types::{AppState, Ship, StarSystemStock, StarSystemDetails};
-use universe::generator::generate_system;
+use universe::generator::generate_star;
 
 #[tokio::main]
 async fn main() {
@@ -74,7 +74,10 @@ async fn get_star_system(
     Extension(_claims): Extension<auth::Claims>,
     State(state): State<AppState>,
 ) -> Result<Json<StarSystemDetails>, (axum::http::StatusCode, String)> {
-    let system = generate_system(x, y);
+    let system = generate_star(x, y, Some(0)).ok_or((
+        axum::http::StatusCode::NOT_FOUND,
+        "System not found".to_string(),
+    ))?;
 
     let stock = sqlx::query_as::<_, StarSystemStock>(
         "SELECT star_x, star_y, last_settled_at, capacity_kt, settled FROM star_system_stock WHERE star_x = $1 AND star_y = $2"

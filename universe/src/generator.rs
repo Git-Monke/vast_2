@@ -4,6 +4,8 @@ use crate::{
     resources::{Material, collect_materials},
 };
 
+use serde::{Deserialize, Serialize};
+
 const STAR_TYPE_SEED: u64 = 0x1111_1111_1111_1111;
 const STAR_SIZE_SEED: u64 = 0x6666_6666_6666_6666;
 const PLANET_COUNT_SEED: u64 = 0x2222_2222_2222_2222;
@@ -12,7 +14,7 @@ const PLANET_TYPE_SEED: u64 = 0x5555_5555_5555_5555;
 const PLANET_SIZE_SEED: u64 = 0x3333_3333_3333_3333;
 const PLANET_RICHNESS_SEED: u64 = 0x4444_4444_4444_4444;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum StarType {
     Red,
     Orange,
@@ -83,13 +85,14 @@ impl StarType {
 }
 
 #[cfg_attr(feature = "spacetimedb", derive(spacetimedb::SpacetimeType))]
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum PlanetType {
     Solid,
     Ocean,
     Gas,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StarSystem {
     pub x: i32,
     pub y: i32,
@@ -99,7 +102,7 @@ pub struct StarSystem {
     pub planets: Vec<Planet>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Planet {
     pub index: u8,
     pub name: String,

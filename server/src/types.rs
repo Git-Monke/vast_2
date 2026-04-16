@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use sqlx::types::Json;
-use universe::{Material, ShipAttackMode, ShipStats, generator::System};
+use universe::{Material, ShipAttackMode, ShipStats, generator::StarSystem};
 use uuid::Uuid;
 
 #[derive(Clone)]
@@ -42,7 +42,7 @@ pub struct PlayerPresence {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct StarSystemDetails {
-    pub system: System,
+    pub system: StarSystem,
     pub stock: Option<StarSystemStock>,
     pub ships: Vec<Ship>,
 }
