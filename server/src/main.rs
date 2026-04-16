@@ -28,6 +28,8 @@ async fn main() {
     let protected_routes = Router::new()
         .route("/ships", get(ships::get_ships))
         .route("/ships/{id}/warp", post(warp_ship_handler))
+        .route("/ships/{id}/dock", post(ships::dock_ship))
+        .route("/ships/{id}/undock", post(ships::undock_ship))
         .route("/systems/{x}/{y}", get(presence::get_star_system))
         .route("/buildings", post(buildings::build_building))
         .layer(middleware::from_fn_with_state(
