@@ -14,7 +14,7 @@ ONCE YOURE DONE WITH A CHANGE, COMMIT IT!
     - `server/src/auth.rs`: Authentication logic, including JWT handling and login/registration handlers.
     - `server/src/error.rs`: Error handling and custom error types for the server.
     - `server/src/jobs/`: Background tasks like warp travel and ship buildling. Warp jobs now track starting coordinates to update presence on departure.
-    - `server/src/presence/`: Player visibility in star systems.
+    - `server/src/presence/`: Player visibility in star systems. Protected system info route in `main.rs` now uses `check_presence`.
     - `server/src/types.rs`: Database and API response models.
 
 - `universe/`: Core game logic and shared types.
