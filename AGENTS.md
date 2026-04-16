@@ -9,6 +9,10 @@ ONCE YOURE DONE WITH A CHANGE, COMMIT IT!
 
 - `server/migrations/`: Database migrations. A `credits` column (BIGINT, default 5000) was added to the `users` table.
 - `server/src/buildings/`: Building construction and pricing logic. `POST /buildings` endpoint added.
+    - Implemented exponential pricing for buildings and special doubling cost for `SalesDepot`.
+    - Added ship mass requirement scaling (0kt to 1000kt) based on building level.
+    - Implemented conditional ownership (only Garrisons, Radars, Sales Depots) and health tracking (only Garrisons).
+    - Integrated credit deduction into the build process.
 
 ## Project Structure Overview
 

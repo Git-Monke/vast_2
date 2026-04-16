@@ -8,7 +8,9 @@ use crate::{
     types::{AppState, Building, BuildingKind},
 };
 
-use super::prices::{get_building_cost, get_required_mass};
+use super::prices::{
+    building_has_health, building_has_owner, get_building_cost, get_required_mass,
+};
 
 #[derive(Deserialize)]
 pub struct BuildingRequest {
@@ -78,13 +80,57 @@ pub async fn build_building(
         }
     }
 
-    // 3. (Scaffold) Check and deduct costs
-    let _cost = get_building_cost(req.kind.clone(), req.level);
-    // TODO: Actually check credits/materials when that system is ready
+    // 3. Check and deduct costs
+    let sales_depot_count: i64 = sqlx::query_scalar!(
+        "SELECT COUNT(*) FROM buildings WHERE owner_id = $1 AND kind = 'SalesDepot'",
+        owner_id
+    )
+    .fetch_one(&state.pool)
+    .await
+    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+    .unwrap_or(0);
 
-    // 4. Insert or update building
-    // Initial health could be based on level or building kind, setting 100 for now.
-    let health = 100 * req.level;
+    let cost = get_building_cost(req.kind.clone(), req.level, sales_depot_count);
+
+    let user_credits: i64 = sqlx::query_scalar("SELECT credits FROM users WHERE id = $1")
+        .bind(owner_id)
+        .fetch_one(&state.pool)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    if user_credits < cost {
+        return Err((
+            StatusCode::PAYMENT_REQUIRED,
+            format!("Insufficient credits. Need {}, have {}", cost, user_credits),
+        ));
+    }
+
+    // 4. Insert or update building within a transaction
+    let mut tx = state
+        .pool
+        .begin()
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    // Deduct credits
+    sqlx::query("UPDATE users SET credits = credits - $1 WHERE id = $2")
+        .bind(cost)
+        .bind(owner_id)
+        .execute(&mut *tx)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let health = if building_has_health(&req.kind) {
+        100 * req.level
+    } else {
+        100 // Or some default
+    };
+
+    let effective_owner = if building_has_owner(&req.kind) {
+        Some(owner_id)
+    } else {
+        None
+    };
 
     let building = sqlx::query_as::<_, Building>(
         r#"
@@ -105,11 +151,15 @@ pub async fn build_building(
     .bind(req.slot_index)
     .bind(req.kind)
     .bind(req.level)
-    .bind(owner_id)
+    .bind(effective_owner)
     .bind(health)
-    .fetch_one(&state.pool)
+    .fetch_one(&mut *tx)
     .await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    tx.commit()
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     Ok(Json(building))
 }
