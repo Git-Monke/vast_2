@@ -103,6 +103,35 @@ pub async fn update_presence(
     Ok(())
 }
 
+/// Returns true if any *enemy* ship or building in the given system has
+/// `attack_mode = 'StrikeFirst'`. An enemy is defined as any entity whose
+/// `owner_id` differs from the supplied `owner_id`.
+pub async fn check_enemy_strike_first(
+    pool: &PgPool,
+    star_x: i32,
+    star_y: i32,
+    owner_id: Uuid,
+) -> Result<bool, AppError> {
+    // Look for a ship with StrikeFirst owned by a different empire.
+    // Also look for a building with StrikeFirst owned by a different empire.
+    let row = sqlx::query!(
+        r#"
+        SELECT 1 as exists FROM ships
+        WHERE star_x = $1 AND star_y = $2 AND owner_id <> $3 AND attack_mode = 'StrikeFirst'
+        UNION ALL
+        SELECT 1 FROM buildings
+        WHERE star_x = $1 AND star_y = $2 AND owner_id IS NOT NULL AND owner_id <> $3 AND attack_mode = 'StrikeFirst'
+        LIMIT 1
+        "#,
+        star_x,
+        star_y,
+        owner_id
+    )
+    .fetch_optional(pool)
+    .await?;
+    Ok(row.is_some())
+}
+
 /// Returns the owner_id of an enemy garrison (MilitaryGarrison) if one exists in the given system.
 /// If no enemy garrison is present, returns `Ok(None)`.
 /// Errors are wrapped in `AppError`.

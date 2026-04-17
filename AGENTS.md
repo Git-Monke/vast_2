@@ -44,4 +44,5 @@ ONCE YOURE DONE WITH A CHANGE, COMMIT IT!
 - `universe/src/buildings.rs`: Building game logic (`garrison_stats` for MilitaryGarrison combat stats).
 
 - Added `check_enemy_garrison` in `server/src/presence/logic.rs` and integrated it into building construction and ship docking for garrison protection.
+- Added `check_enemy_strike_first` helper and battle execution on ship arrival in `server/src/jobs/mod.rs`. Ships with `StrikeFirst` initiate battles, otherwise an enemy with `StrikeFirst` causes the arriving ship to be the initiator.
 
