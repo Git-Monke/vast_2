@@ -24,6 +24,8 @@ pub struct Ship {
     pub jump_ready_at: time::OffsetDateTime,
     pub health: i32,
     pub docked_at: Option<i64>,
+    pub from_star_x: Option<i32>,
+    pub from_star_y: Option<i32>,
 }
 
 impl Ship {

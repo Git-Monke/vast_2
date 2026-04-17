@@ -1,0 +1,1 @@
+ALTER TABLE ships ADD COLUMN from_star_x INT, ADD COLUMN from_star_y INT;

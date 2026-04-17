@@ -9,6 +9,7 @@ use tracing_subscriber;
 use server::auth;
 use server::battle::handlers::battle_handler;
 use server::buildings;
+use server::jobs;
 use server::jobs::warp::warp_ship_handler;
 use server::presence;
 use server::ships;
@@ -43,7 +44,13 @@ async fn main() {
         .route("/register", post(auth::register_user))
         .route("/authenticate", post(auth::authorize))
         .merge(protected_routes)
-        .with_state(state);
+        .with_state(state.clone());
+
+    // Load pending warp arrival tasks for ships that are still in transit.
+    // Errors are logged but do not stop server startup.
+    if let Err(e) = jobs::load_arrival_tasks(state.clone()).await {
+        eprintln!("Failed to load arrival tasks: {:?}", e);
+    }
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:5280")
         .await

@@ -1,5 +1,6 @@
 use crate::auth::Claims;
 use crate::error::AppError;
+
 use crate::presence::update_presence;
 use crate::types::{AppState, Ship};
 use axum::{Extension, Json, extract::Path, extract::State};
@@ -91,23 +92,35 @@ pub async fn warp_ship_handler(
     let from_star_x = ship.star_x;
     let from_star_y = ship.star_y;
 
+    // Update ship row with new coordinates and timers
     sqlx::query!(
-        "UPDATE ships SET star_x = $1, star_y = $2, warp_completed_at = $3, jump_ready_at = $4 WHERE id = $5",
+        "UPDATE ships SET star_x = $1, star_y = $2, warp_completed_at = $3, jump_ready_at = $4, from_star_x = $5, from_star_y = $6 WHERE id = $7",
         req.x,
         req.y,
         warp_completed_at,
         jump_ready_at,
+        from_star_x,
+        from_star_y,
         id
     )
     .execute(&state.pool)
     .await
     .map_err(|e| AppError::Internal(e.to_string()))?;
 
-    // Update presence for both old and new locations
+    // Spawn a background task that will call handle_ship_arrival when the warp finishes.
+    // We pass the original and target coordinates so the arrival handler can update presence.
+    crate::jobs::spawn_arrival_task(
+        state.clone(),
+        id,
+        warp_completed_at,
+        from_star_x,
+        from_star_y,
+        req.x,
+        req.y,
+    );
+
+    // Update player presence in case that was the last ship in the system
     update_presence(&state.pool, ship.owner_id, from_star_x, from_star_y)
-        .await
-        .map_err(|e| AppError::Internal(e.to_string()))?;
-    update_presence(&state.pool, ship.owner_id, req.x, req.y)
         .await
         .map_err(|e| AppError::Internal(e.to_string()))?;
 
