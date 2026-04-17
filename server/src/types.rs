@@ -20,6 +20,7 @@ pub struct Ship {
     pub warp_completed_at: Option<time::OffsetDateTime>,
     pub star_x: i32,
     pub star_y: i32,
+    #[serde(with = "time::serde::rfc3339")]
     pub jump_ready_at: time::OffsetDateTime,
     pub health: i32,
     pub docked_at: Option<i64>,
