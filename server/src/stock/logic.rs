@@ -1,7 +1,7 @@
 use crate::buildings::prices::{get_mining_rate_kt_s, get_warehouse_capacity_kt};
 use crate::types::{Building, BuildingKind};
+use sqlx::PgPool;
 use sqlx::types::Json;
-use sqlx::{PgConnection, PgPool};
 use universe::Material;
 use universe::MaterialKind;
 use universe::material_stock::{accrue_settled, mining_rates_hash_from_pairs};

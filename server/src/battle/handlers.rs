@@ -2,7 +2,7 @@ use axum::{Extension, Json, extract::Path, extract::State, http::StatusCode};
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{auth, battle::logic::execute_battle, error::AppError, types::AppState};
+use crate::{auth, battle::logic::execute_battle, types::AppState};
 
 #[derive(Deserialize)]
 pub struct BattleRequest {

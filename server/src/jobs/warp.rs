@@ -107,7 +107,6 @@ pub async fn warp_ship_handler(
     .await
     .map_err(|e| AppError::Internal(e.to_string()))?;
 
-    // Spawn arrival task
     crate::jobs::spawn_arrival_task(state.clone(), id, warp_completed_at, req.x, req.y);
 
     // Update player presence in case that was the last ship in the system
