@@ -54,15 +54,10 @@ pub async fn handle_ship_arrival(
         Some(ship.owner_id)
     } else {
         // Arriving ship is defensive – check if any enemy in the system has StrikeFirst.
-        let enemy_has_sf = check_enemy_strike_first(&state.pool, to_x, to_y, ship.owner_id)
+        // If so, that enemy is the initiator.
+        check_enemy_strike_first(&state.pool, to_x, to_y, ship.owner_id)
             .await
-            .map_err(|e| AppError::Internal(e.to_string()))?;
-        if enemy_has_sf {
-            // Enemy is aggressive, but the rule says the arriving ship becomes initiator.
-            Some(ship.owner_id)
-        } else {
-            None
-        }
+            .map_err(|e| AppError::Internal(e.to_string()))?
     };
 
     if let Some(initiator) = initiator_opt {
@@ -71,8 +66,6 @@ pub async fn handle_ship_arrival(
             .await
             .map_err(|e| AppError::Internal(e.to_string()))?;
     }
-
-    // put battle execution logic here
 
     Ok(())
 }

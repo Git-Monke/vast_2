@@ -103,23 +103,38 @@ pub async fn update_presence(
     Ok(())
 }
 
-/// Returns true if any *enemy* ship or building in the given system has
-/// `attack_mode = 'StrikeFirst'`. An enemy is defined as any entity whose
-/// `owner_id` differs from the supplied `owner_id`.
+/// Returns the `owner_id` of the first *enemy* ship or building in the given
+/// system that has `attack_mode = 'StrikeFirst'`. An enemy is defined as any
+/// entity whose `owner_id` differs from the supplied `owner_id`.
+/// Returns `Ok(None)` when no enemy has StrikeFirst active.
 pub async fn check_enemy_strike_first(
     pool: &PgPool,
     star_x: i32,
     star_y: i32,
     owner_id: Uuid,
-) -> Result<bool, AppError> {
-    // Look for a ship with StrikeFirst owned by a different empire.
-    // Also look for a building with StrikeFirst owned by a different empire.
-    let row = sqlx::query!(
+) -> Result<Option<Uuid>, AppError> {
+    // Prefer ships: they warp in, so the first one we find is the aggressor.
+    let ship_row = sqlx::query!(
         r#"
-        SELECT 1 as exists FROM ships
+        SELECT owner_id FROM ships
         WHERE star_x = $1 AND star_y = $2 AND owner_id <> $3 AND attack_mode = 'StrikeFirst'
-        UNION ALL
-        SELECT 1 FROM buildings
+        LIMIT 1
+        "#,
+        star_x,
+        star_y,
+        owner_id
+    )
+    .fetch_optional(pool)
+    .await?;
+
+    if let Some(row) = ship_row {
+        return Ok(Some(row.owner_id));
+    }
+
+    // Fall back to buildings (garrisons, radars, etc.).
+    let building_row = sqlx::query!(
+        r#"
+        SELECT owner_id FROM buildings
         WHERE star_x = $1 AND star_y = $2 AND owner_id IS NOT NULL AND owner_id <> $3 AND attack_mode = 'StrikeFirst'
         LIMIT 1
         "#,
@@ -129,7 +144,8 @@ pub async fn check_enemy_strike_first(
     )
     .fetch_optional(pool)
     .await?;
-    Ok(row.is_some())
+
+    Ok(building_row.and_then(|r| r.owner_id))
 }
 
 /// Returns the owner_id of an enemy garrison (MilitaryGarrison) if one exists in the given system.
