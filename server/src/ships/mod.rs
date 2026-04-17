@@ -1,5 +1,7 @@
 pub mod docking;
 pub mod get;
+pub mod sell;
 
 pub use docking::{DockRequest, dock_ship, undock_ship};
 pub use get::get_ships;
+pub use sell::sell_ship_cargo;

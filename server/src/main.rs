@@ -32,6 +32,7 @@ async fn main() {
         .route("/ships/{id}/warp", post(warp_ship_handler))
         .route("/ships/{id}/dock", post(ships::dock_ship))
         .route("/ships/{id}/undock", post(ships::undock_ship))
+        .route("/ships/{id}/sell", post(ships::sell_ship_cargo))
         .route("/systems/{x}/{y}", get(presence::get_star_system))
         .route("/systems/{x}/{y}/battle", post(battle_handler))
         .route("/buildings", post(buildings::build_building))
