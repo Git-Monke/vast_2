@@ -8,7 +8,7 @@ use uuid::Uuid;
 use crate::{
     auth,
     presence::{check_enemy_garrison, check_presence},
-    types::{AppState, Building},
+    types::{AppState, Building, BuildingKind},
 };
 
 pub async fn delete_building(
@@ -30,10 +30,8 @@ pub async fn delete_building(
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "Building not found".to_string()))?;
 
-    // Ensure the requester owns the building
-    if building.owner_id != Some(owner_id) {
-        return Err((StatusCode::FORBIDDEN, "Not your building".to_string()));
-    }
+    // Note: There is no check on building ownership. The route is only protected by garrisons!
+    // This means someone can delete someone else's buildings if they are undefended.
 
     // Presence and enemy garrison checks – same rules as building creation
     let is_present = check_presence(&state.pool, owner_id, building.star_x, building.star_y)
@@ -55,12 +53,19 @@ pub async fn delete_building(
         ));
     }
 
-    // Delete the building inside a transaction (future-proof if extra steps needed)
+    // Delete the building (and possibly associated ships) inside a transaction
     let mut tx = state
         .pool
         .begin()
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    // If this is a ShipDepot, delete any docked ship first
+    if building.kind == BuildingKind::ShipDepot {
+        sqlx::query!("DELETE FROM ships WHERE docked_at = $1", building_id)
+            .execute(&mut *tx)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    }
     sqlx::query!("DELETE FROM buildings WHERE id = $1", building_id)
         .execute(&mut *tx)
         .await
