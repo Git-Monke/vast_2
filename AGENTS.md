@@ -25,7 +25,7 @@ ONCE YOURE DONE WITH A CHANGE, COMMIT IT!
     - `server/src/error.rs`: Error handling and custom error types for the server.
     - `server/src/jobs/`: Ships now persist `from_star_x`/`from_star_y` during warp so presence is correctly restored on server restart. `load_arrival_tasks` reads these fields and passes them to `spawn_arrival_task`.
     - `server/src/presence/`: Player visibility in star systems. Broken into `logic.rs` (DB checks/updates) and `handlers.rs` (API handlers).
-    - `server/src/ships/`: Ship-related handlers. Broken down into `get.rs` and `docking.rs`.
+    - `server/src/ships/`: Ship-related handlers. Includes `collect.rs` with `POST /ships/{id}/collect` endpoint for collecting materials from system stock.
 - `server/src/buildings/prices.rs`: Building construction and pricing logic. Also contains helper functions `get_ship_depot_capacity_kt` and `get_depot_used_capacity_kt`.
     - `server/src/types.rs`: Database and API response models.
 
