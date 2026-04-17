@@ -107,17 +107,8 @@ pub async fn warp_ship_handler(
     .await
     .map_err(|e| AppError::Internal(e.to_string()))?;
 
-    // Spawn a background task that will call handle_ship_arrival when the warp finishes.
-    // We pass the original and target coordinates so the arrival handler can update presence.
-    crate::jobs::spawn_arrival_task(
-        state.clone(),
-        id,
-        warp_completed_at,
-        from_star_x,
-        from_star_y,
-        req.x,
-        req.y,
-    );
+    // Spawn arrival task
+    crate::jobs::spawn_arrival_task(state.clone(), id, warp_completed_at, req.x, req.y);
 
     // Update player presence in case that was the last ship in the system
     update_presence(&state.pool, ship.owner_id, from_star_x, from_star_y)
