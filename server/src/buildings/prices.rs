@@ -2,17 +2,22 @@ use crate::types::{BuildingKind, Ship};
 
 /// Returns the resource cost for a building of a certain type and level.
 pub fn get_building_cost(kind: BuildingKind, level: i32, sales_depot_count: i64) -> i64 {
+    // SalesDepot cost scales exponentially with the number of existing depots
     if kind == BuildingKind::SalesDepot {
         return 1000 * 2i64.pow(sales_depot_count as u32);
     }
 
-    // Exponential-ish scaling for level 1-10
-    // level 1: 100
-    // level 2: 200
-    // level 4: 1000 (roughly)
-    // A power of 2.15 handles this reasonably: 100 * 2.15^(level-1)
-    let base = 100.0;
-    let growth = 2.15f64;
+    // Base cost and growth factor per building kind
+    let (base, growth) = match kind {
+        BuildingKind::MiningDepot => (200.0, 1.5f64),
+        BuildingKind::Warehouse => (150.0, 1.6f64),
+        BuildingKind::MilitaryGarrison => (500.0, 2.0f64),
+        BuildingKind::ShipDepot => (300.0, 1.8f64),
+        BuildingKind::Radar => (250.0, 1.7f64),
+        // Default fallback (should not hit for SalesDepot which is handled above)
+        _ => (100.0, 2.15f64),
+    };
+    // Exponential scaling based on level (level 1 => base cost)
     (base * growth.powi(level - 1)) as i64
 }
 
