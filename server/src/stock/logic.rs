@@ -45,16 +45,15 @@ pub async fn settle_star_system_stock(
     };
 
     // Fetch buildings to calculate capacity and rates
-    let buildings = sqlx::query_as!(
-        Building,
+    let buildings = sqlx::query_as::<_, Building>(
         r#"
-        SELECT id, star_x, star_y, planet_index, slot_index, kind as "kind: _", level, degradation_percent, mining_material, owner_id, attack_mode as "attack_mode: _", health
+        SELECT id, star_x, star_y, planet_index, slot_index, kind, level, degradation_percent, mining_material, owner_id, attack_mode, health, scan_ready_at
         FROM buildings
         WHERE star_x = $1 AND star_y = $2
         "#,
-        star_x,
-        star_y
     )
+    .bind(star_x)
+    .bind(star_y)
     .fetch_all(tx)
     .await?;
 

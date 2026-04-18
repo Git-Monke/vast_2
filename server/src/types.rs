@@ -26,6 +26,8 @@ pub struct Ship {
     pub docked_at: Option<i64>,
     pub from_star_x: Option<i32>,
     pub from_star_y: Option<i32>,
+    #[serde(with = "time::serde::rfc3339")]
+    pub scan_ready_at: time::OffsetDateTime,
 }
 
 impl Ship {
@@ -60,6 +62,8 @@ pub struct Building {
     pub owner_id: Option<Uuid>,
     pub attack_mode: Option<ShipAttackMode>,
     pub health: i32,
+    #[serde(with = "time::serde::rfc3339")]
+    pub scan_ready_at: time::OffsetDateTime,
 }
 
 #[derive(Serialize, Deserialize, Clone, sqlx::FromRow)]

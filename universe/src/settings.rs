@@ -34,6 +34,9 @@ pub const MAX_STARTER_SAMPLE_ATTEMPTS: u32 = 4_096;
 pub const STARTER_LOCAL_GRID: i32 = 50;
 pub const STARTER_LOCAL_HALF: i32 = STARTER_LOCAL_GRID / 2;
 
+/// Scanning charge rate (ly per second). 0.5s per ly = 2 ly/s.
+pub const SCAN_CHARGE_RATE_LY_PER_SEC: f64 = 2.0;
+
 #[inline]
 pub fn grid_to_ly(g: i32) -> f64 {
     g as f64 / COORD_UNITS_PER_LY as f64

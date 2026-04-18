@@ -39,6 +39,14 @@ async fn main() {
         .route("/buildings", post(buildings::build_building))
         .route("/buildings/{id}/upgrade", post(buildings::upgrade_building))
         .route("/buildings/{id}", delete(buildings::delete_building))
+        .route(
+            "/scan/ship/{id}",
+            post(server::scan::handlers::scan_ship_handler),
+        )
+        .route(
+            "/scan/building/{id}",
+            post(server::scan::handlers::scan_building_handler),
+        )
         .layer(middleware::from_fn_with_state(
             state.clone(),
             auth::auth_middleware,

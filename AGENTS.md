@@ -8,6 +8,7 @@ Then in the new file you write the migration. DO NOT AUTO COMMIT THE MIGRATION, 
 ONCE YOURE DONE WITH A CHANGE, COMMIT IT!
 
 - `server/migrations/`: Database migrations. A `credits` column (BIGINT, default 5000) was added to the `users` table.
+- `server/src/scan/`: Scanning endpoints. Ships and Radars can scan distant star systems via `POST /scan/ship/{id}` and `POST /scan/building/{id}`. Cooldown is 0.5s per ly (constant `SCAN_CHARGE_RATE_LY_PER_SEC = 2.0` in `universe/src/settings.rs`), stored in `scan_ready_at` column.
 - `server/src/stock/`: Added material stock logic. `settle_star_system_stock` calculates real stock on the fly and is called before building construction to keep production rates and warehouse capacities accurate. `capacity_kt` was dropped from the database.
 - `server/src/buildings/`: Building construction and pricing logic. `POST /buildings` endpoint added.
     - Implemented exponential pricing for buildings and special doubling cost for `SalesDepot`.
