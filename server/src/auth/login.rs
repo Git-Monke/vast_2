@@ -88,12 +88,11 @@ pub async fn auth_middleware(
     }
 
     let token = &auth_header[7..];
-    let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "secret".into());
 
-    let token_data = decode_token(token, &secret)
+    let token_data = decode_token(token)
         .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid token".into()))?;
 
-    req.extensions_mut().insert(token_data.claims);
+    req.extensions_mut().insert(token_data);
 
     Ok(next.run(req).await)
 }

@@ -38,6 +38,7 @@ async fn main() {
         .route("/systems/{x}/{y}", get(presence::get_star_system))
         .route("/systems/{x}/{y}/battle", post(battle_handler))
         .route("/buildings", post(buildings::build_building))
+        .route("/buildings/{id}/attack-mode", post(buildings::set_building_attack_mode))
         .route("/buildings/{id}/upgrade", post(buildings::upgrade_building))
         .route("/buildings/{id}", delete(buildings::delete_building))
         .route(
