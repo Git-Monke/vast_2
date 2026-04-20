@@ -3,3 +3,6 @@ target/
 .git
 .env
 .pi
+PLAN.md
+.tokensave
+

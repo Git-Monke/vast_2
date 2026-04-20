@@ -1,7 +1,8 @@
 use crate::types::AppState;
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use axum::{Json, extract::State, http::StatusCode};
-use jsonwebtoken::{EncodingKey, Header, encode};
+
+use crate::auth::jwt::{Claims, create_token, decode_token};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -17,14 +18,7 @@ pub struct AuthResponse {
     pub token_type: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Claims {
-    // sub = JWT standard field for user id
-    pub sub: String,
-    pub username: String,
-    pub exp: usize,
-    pub iat: usize,
-}
+
 
 pub async fn authorize(
     State(state): State<AppState>,
@@ -52,7 +46,6 @@ pub async fn authorize(
         .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid credentials".into()))?;
 
     // 3. Generate JWT
-    let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "secret".into());
     let now = time::OffsetDateTime::now_utc().unix_timestamp() as usize;
     let claims = Claims {
         sub: user_id.to_string(),
@@ -61,17 +54,11 @@ pub async fn authorize(
         iat: now,
     };
 
-    let token = encode(
-        &Header::default(),
-        &claims,
-        &EncodingKey::from_secret(secret.as_bytes()),
-    )
-    .map_err(|_| {
-        (
+    let token = create_token(&claims)
+        .map_err(|_| (
             StatusCode::INTERNAL_SERVER_ERROR,
             "Failed to create token".into(),
-        )
-    })?;
+        ))?;
 
     Ok(Json(AuthResponse {
         access_token: token,
@@ -103,12 +90,8 @@ pub async fn auth_middleware(
     let token = &auth_header[7..];
     let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "secret".into());
 
-    let token_data = jsonwebtoken::decode::<Claims>(
-        token,
-        &jsonwebtoken::DecodingKey::from_secret(secret.as_bytes()),
-        &jsonwebtoken::Validation::default(),
-    )
-    .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid token".into()))?;
+    let token_data = decode_token(token, &secret)
+        .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid token".into()))?;
 
     req.extensions_mut().insert(token_data.claims);
 
